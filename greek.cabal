@@ -29,3 +29,16 @@ executable tei-betacode
 
   -- hs-source-dirs:      
   default-language:    Haskell2010
+
+
+test-suite greek-specs
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      specs
+  main-is:             Specs.hs
+  build-depends:         base       == 4.6.*
+                       , hspec      == 1.6.*
+                       , QuickCheck == 2.6.*
+
+source-repository this
+  type:                git
+  location:            git://github.com/erochest/greek.git

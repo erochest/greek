@@ -33,9 +33,10 @@ diacritic = choice [ char' ')'  '\x0313'  --   ̓  )   Smooth breathing    ἐν
 punct :: Parser Char
 punct = choice [ char  '.'            -- .	.	Period
                , char  ','            -- ,	,	Comma
-               , char' ':'  '\x00b7'  -- ·	:	Colon (Ano Stigme)
+               -- , char' ':'  '\x00b7'  -- ·	:	Colon (Ano Stigme)
+               , char' ':'  ':'       -- ·	:	Colon (Ano Stigme)
                , char  ';'            -- ;	;	Question Mark
-               , char' '\'' '\x2019'  -- ’	'	Apostrophe
+               , char' '\'' '\x1fbd'  -- ’	'	Apostrophe
                , char' '-'  '\x2010'  -- ‐	-	Hyphen
                , char' '_'  '\x2014'  -- —	_	Dash
                ]
@@ -114,11 +115,15 @@ endOfWord = eow . maybe ' ' id <$> peekChar
           eow '_'  = True
           eow x    = isSpace x
 
+remove :: Parser Builder
+remove = (char '<' <|> char '>') *> pure mempty
+
 betaCode :: Parser T.Text
 betaCode =   toStrict . toLazyText . mconcat
-         <$> (many' (space' <|> upperseq <|> lowerseq <|> punct') <* endOfInput)
+         <$> (many' (space' <|> digit' <|> upperseq <|> lowerseq <|> punct' <|> remove) <* endOfInput)
     where space' = singleton <$> space
           punct' = singleton <$> punct
+          digit' = singleton <$> digit
 
 fromBeta :: T.Text -> Either T.Text T.Text
 fromBeta t = fmapL (const errMsg) $ parseOnly betaCode t

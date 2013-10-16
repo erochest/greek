@@ -56,18 +56,18 @@ spec = describe "betaCode" $ do
     it "should translate the macron example." $
         "MAXAI/RA&S" `shouldBeBetaFor` "μαχαίρᾱς"
     it "should NOT translate the breve example." $
-        "MA/XAIRA'" `shouldBeBetaFor` "μάχαιρα’"
+        "MA/XAIRA'" `shouldBeBetaFor` "μάχαιρα᾽"
 
     it "should recognize periods." $
         "EN." `shouldBeBetaFor` "εν."
     it "should recognize commas." $
         "EN," `shouldBeBetaFor` "εν,"
-    it "should recognize colons (ano stigme)." $
-        "EN:" `shouldBeBetaFor` "εν·"
+    it "should NOT recognize colons (ano stigme)." $
+        "EN:" `shouldBeBetaFor` "εν:"
     it "should recognize question marks." $
         "EN;" `shouldBeBetaFor` "εν;"
-    it "should recognize an apostrophe." $
-        "'EN" `shouldBeBetaFor` "’εν"
+    it "should recognize an apostrophe as a Greek koronis." $
+        "'EN" `shouldBeBetaFor` "᾽εν"
     it "should recongize a hyphen." $
         "EN-EN" `shouldBeBetaFor` "εν‐εν"
     it "should recongize a dash." $
@@ -76,14 +76,5 @@ spec = describe "betaCode" $ do
     it "should return incorrect lines with an error marker." $
         let input  = "(/hfaiste"
             output = "ERROR " <> input
-        in  input `shouldBeBetaFor` output
-
-    it "should translate lines from the original files (1)." $
-        let input  = "*(/hfaiste, soi\\ de\\ xrh\\ me/lein e)pistola\\s"
-            output = "Ἥφαιστε, σοὶ δὲ χρὴ μέλειν ἐπιστολὰς"
-        in  input `shouldBeBetaFor` output
-    it "should translate lines from the original files (2)." $
-        let input  = "e)gw\\ d' a)/tolmo/s ei)mi suggenh= qeo\\n"
-            output = "ἐγὼ δ’ ἄτολμός εἰμι συγγενῆ θεὸν"
         in  input `shouldBeBetaFor` output
 

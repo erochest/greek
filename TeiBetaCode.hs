@@ -12,14 +12,12 @@ import           Data.Monoid
 import           Control.Lens              hiding (children)
 import qualified Data.Text                 as T
 import           Data.XML.Types
--- import qualified Data.XML.Types as XT
 import qualified Filesystem.Path.CurrentOS as FS
 import           Shelly
--- import           Text.XML
--- import qualified Text.XML as X
--- import           Text.XML.Cursor
 import           Text.XML.Unresolved
 import qualified Text.XML.Unresolved       as U
+
+import           Text.BetaCode
 
 default (T.Text)
 
@@ -31,11 +29,6 @@ inputDir = "Classics"
 
 outputDir :: FS.FilePath
 outputDir = "gk"
-
--- BetaCode conversion
-
-fromBeta :: T.Text -> T.Text
-fromBeta = undefined
 
 -- XML handling
 
@@ -141,10 +134,8 @@ mapElement f el = let el' = f el
           mapNode _  node            = node
 
 transformElement :: Element -> Element
-transformElement el@(Element "text" attrs _)
-        | ("lang", [ContentText "greek"]) `elem` attrs = mapChildren transformGreekNode el
-        | otherwise = mapChildren transformNode el
-transformElement el = mapChildren transformNode el
+transformElement el@(Element "text" _ _) = mapChildren transformGreekNode el
+transformElement el                      = mapChildren transformNode el
 
 transformNode :: Node -> Node
 transformNode (NodeElement el) = NodeElement $ transformElement el
@@ -152,7 +143,7 @@ transformNode n                = n
 
 transformGreekNode :: Node -> Node
 transformGreekNode (NodeElement el)              = NodeElement $ transformGreekElement el
-transformGreekNode (NodeContent (ContentText c)) = NodeContent . ContentText $ fromBeta c
+transformGreekNode (NodeContent (ContentText c)) = NodeContent . ContentText $ fromBetaIgnore c
 transformGreekNode n                             = n
 
 transformGreekElement :: Element -> Element
@@ -170,9 +161,9 @@ main = shelly $ verbosely $ do
         let outFile = outputDir </> inFile
         echo $ toTextIgnore inFile <> "\t=>\t" <> toTextIgnore outFile
         mkdir_p $ FS.directory outFile
-        doc <- liftIO $ U.readFile def inFile
-        let doc' = transformDoc doc
-        liftIO $ U.writeFile (def { rsPretty = True }) outFile doc'
+        liftIO $   U.writeFile (def { rsPretty = True }) outFile
+               =<< transformDoc
+               <$> U.readFile def inFile
 
 isGkFile :: FS.FilePath -> Sh Bool
 isGkFile = return . T.isSuffixOf "_gk.xml" . toTextIgnore

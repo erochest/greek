@@ -143,7 +143,8 @@ transformGreekNode (NodeContent (ContentText c)) = NodeContent . ContentText $ f
 transformGreekNode n                             = n
 
 transformGreekElement :: Element -> Element
-transformGreekElement = mapChildren transformGreekNode
+transformGreekElement e@(Element "bibl" _ _) = e
+transformGreekElement el                     = mapChildren transformGreekNode el
 
 stripDoctype :: Document -> Document
 stripDoctype doc = doc & doctype .~ Nothing

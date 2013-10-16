@@ -8,12 +8,16 @@ module Main where
 
 import           Control.Monad
 import           Data.Monoid
+import           Data.String               (fromString)
+import           Prelude                   hiding (FilePath)
 
 import           Control.Lens              hiding (children)
 import qualified Data.Text                 as T
 import           Data.XML.Types
 import qualified Filesystem.Path.CurrentOS as FS
+import           Options.Applicative       hiding ((&))
 import           Shelly
+import           System.FilePath.Glob
 import           Text.XML.Unresolved
 import qualified Text.XML.Unresolved       as U
 
@@ -21,14 +25,6 @@ import           Text.BetaCode
 
 default (T.Text)
 
-
--- Parameters
-
-inputDir :: FS.FilePath
-inputDir = "Classics"
-
-outputDir :: FS.FilePath
-outputDir = "gk"
 
 -- XML handling
 
@@ -155,16 +151,36 @@ stripDoctype doc = doc & doctype .~ Nothing
 -- Program stuff
 
 main :: IO ()
-main = shelly $ verbosely $ do
-    gkFiles <- findWhen isGkFile inputDir
-    forM_ gkFiles $ \inFile -> do
-        let outFile = outputDir </> inFile
-        echo $ toTextIgnore inFile <> "\t=>\t" <> toTextIgnore outFile
-        mkdir_p $ FS.directory outFile
-        liftIO $   U.writeFile (def { rsPretty = True }) outFile
-               =<< transformDoc
-               <$> U.readFile def inFile
+main = do
+    config <- execParser opts
+    let inputDir  = (fromString $ cfgInputDir config  :: FilePath)
+        outputDir = (fromString $ cfgOutputDir config :: FilePath)
+        isGkFile  = return
+                  . match (compile (cfgGreekGlob config))
+                  . FS.encodeString
+                  . FS.filename
+    shelly $ verbosely $ do
+        gkFiles <- findWhen isGkFile inputDir
+        forM_ gkFiles $ \inFile -> do
+            outFile <- canonic $ outputDir </> inFile
+            echo $ toTextIgnore inFile <> "\t=>\t" <> toTextIgnore outFile
+            mkdir_p $ FS.directory outFile
+            liftIO $   U.writeFile (def { rsPretty = True }) outFile
+                   =<< transformDoc
+                   <$> U.readFile def inFile
+    where opts' =   TeiBetaCode
+                <$> strOption (  short 'i' <> long "input-dir" <> value "./Classics/" <> metavar "INPUT_DIR"
+                              <> help "The input directory to walk for files matching GREEK_GLOB.")
+                <*> strOption (  short 'g' <> long "greek-glob" <> value "*_gk.xml" <> metavar "GREEK_GLOB"
+                              <> help "The file name pattern to match for files to process.")
+                <*> strOption (  short 'o' <> long "output-dir" <> value "./gk/" <> metavar "OUTPUT_DIR"
+                              <> help "The directory to place the output files into.")
+          opts  = info (helper <*> opts') (  fullDesc
+                                          <> progDesc "Converts the beta code in a directory of TEI documents to Unicode.")
 
-isGkFile :: FS.FilePath -> Sh Bool
-isGkFile = return . T.isSuffixOf "_gk.xml" . toTextIgnore
+data TeiBetaCode = TeiBetaCode
+                 { cfgInputDir  :: String
+                 , cfgGreekGlob :: String
+                 , cfgOutputDir :: String
+                 }
 

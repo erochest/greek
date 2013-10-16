@@ -28,6 +28,8 @@ executable tei-betacode
                      , lens
                      , attoparsec
                      , errors
+                     , optparse-applicative
+                     , Glob
 
   -- hs-source-dirs:      
   default-language:    Haskell2010

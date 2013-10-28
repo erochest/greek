@@ -34,7 +34,7 @@ punct :: Parser Char
 punct = choice [ char  '.'            -- .	.	Period
                , char  ','            -- ,	,	Comma
                -- , char' ':'  '\x00b7'  -- ·	:	Colon (Ano Stigme)
-               , char' ':'  ':'       -- ·	:	Colon (Ano Stigme)
+               , char  ':'            -- ·	:	Colon (Ano Stigme)
                , char  ';'            -- ;	;	Question Mark
                , char' '\'' '\x1fbd'  -- ’	'	Apostrophe
                , char' '-'  '\x2010'  -- ‐	-	Hyphen

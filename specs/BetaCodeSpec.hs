@@ -78,3 +78,4 @@ spec = describe "betaCode" $ do
             output = "ERROR " <> input
         in  input `shouldBeBetaFor` output
 
+

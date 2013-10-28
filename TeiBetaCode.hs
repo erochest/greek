@@ -96,6 +96,8 @@ _nameNamespace = lens nameNamespace $ \n ns -> n { nameNamespace = ns }
 _namePrefix :: Lens' Name (Maybe T.Text)
 _namePrefix = lens namePrefix $ \n p -> n { namePrefix = p }
 
+-- Some of these should be traversals or prisms or somesuch.
+
 children :: Lens' Element [Node]
 children = lens elementNodes $ \e ns -> e { elementNodes = ns }
 
@@ -116,15 +118,14 @@ element name = filter (hasName name)
 -- And the transformations
 
 transformDoc :: Document -> Document
-transformDoc doc = let doc' = doc & doctype .~ Nothing
-                   in  doc' & root %~ transformElement
+transformDoc doc = doc & doctype .~ Nothing
+                       & root    %~ transformElement
 
 mapChildren :: (Node -> Node) -> Element -> Element
 mapChildren f = over (children . traverse) f
 
 mapElement :: (Element -> Element) -> Element -> Element
-mapElement f el = let el' = f el
-                  in  el' { elementNodes = map (mapNode f) $ elementNodes el' }
+mapElement f el = f el & _elementNodes . traverse %~ mapNode f
     where mapNode :: (Element -> Element) -> Node -> Node
           mapNode f' (NodeElement e) = NodeElement $ mapElement f' e
           mapNode _  node            = node

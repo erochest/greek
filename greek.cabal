@@ -34,6 +34,18 @@ executable tei-betacode
   -- hs-source-dirs:      
   default-language:    Haskell2010
 
+executable split-xml
+  main-is:            SplitXml.hs
+  -- other-modules:      
+  build-depends:      base >=4.6 && <4.7
+                    , text
+                    , system-filepath
+                    , xml-conduit
+                    , xml-types
+                    , lens
+                    , errors
+                    , optparse-applicative
+  default-language:    Haskell2010
 
 test-suite greek-specs
   type:                exitcode-stdio-1.0

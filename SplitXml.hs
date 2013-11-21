@@ -102,19 +102,22 @@ mapNodeContent _ n                = n
 -- This particular list of entities was generated with this unholy shell command:
 -- egrep '&[^;]*;' gk/Classics/Plato/opensource/plat.tet* | sed 's/.*\(&[^;]*;\).*/\1/g' | sort | uniq | pbcopy
 entity :: Content -> Content
-entity   (ContentEntity "dagger") = ContentText $ T.singleton '†'
-entity   (ContentEntity "dash")   = ContentText $ T.singleton '-'
-entity   (ContentEntity "ldquo")  = ContentText $ T.singleton '“'
-entity   (ContentEntity "lpar")   = ContentText $ T.singleton '('
-entity   (ContentEntity "lsqb")   = ContentText $ T.singleton '['
-entity   (ContentEntity "lsquo")  = ContentText $ T.singleton '‘'
-entity   (ContentEntity "mdash")  = ContentText $ T.singleton '—'
-entity   (ContentEntity "rdquo")  = ContentText $ T.singleton '”'
-entity   (ContentEntity "rpar")   = ContentText $ T.singleton ')'
-entity   (ContentEntity "rsqb")   = ContentText $ T.singleton ']'
-entity   (ContentEntity "rsquo")  = ContentText $ T.singleton '’'
+entity   (ContentEntity "dagger") = contentChar '†'
+entity   (ContentEntity "dash")   = contentChar '-'
+entity   (ContentEntity "ldquo")  = contentChar '“'
+entity   (ContentEntity "lpar")   = contentChar '('
+entity   (ContentEntity "lsqb")   = contentChar '['
+entity   (ContentEntity "lsquo")  = contentChar '‘'
+entity   (ContentEntity "mdash")  = contentChar '—'
+entity   (ContentEntity "rdquo")  = contentChar '”'
+entity   (ContentEntity "rpar")   = contentChar ')'
+entity   (ContentEntity "rsqb")   = contentChar ']'
+entity   (ContentEntity "rsquo")  = contentChar '’'
 entity   (ContentEntity name)     = ContentText $ "&" <> name <> ";"
 entity c@(ContentText _)          = c
+
+contentChar :: Char -> Content
+contentChar = ContentText . T.singleton
 
 -- Processing the Output
 

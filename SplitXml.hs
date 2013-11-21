@@ -24,22 +24,6 @@ import           Prelude                   hiding (FilePath)
 import           Text.XML.Unresolved
 import qualified Text.XML.Unresolved       as U
 
-{-
-
-doc <- Text.XML.Unresolved.readFile Text.XML.Unresolved.def "gk/Classics/Plato/opensource/plat.tet1_gk.xml"
-let texts =  getTexts doc
-
--}
-
-
--- Data Types
-
-data SplitOn = SplitText
-             | SplitPage
-             | SplitSection
-             | SplitSpeaker
-             deriving (Show)
-
 
 -- Lenses
 
@@ -187,41 +171,17 @@ main = do
                       )
           writeOpts = def { rsPretty = True }
 
--- TODO: Not chunking here, so remove chunk size, overlap, and split on.
 data SplitXml = SplitXml
-              { splitOn   :: SplitOn
-              , inputFile :: String
+              { inputFile :: String
               , outputDir :: String
-              , chunkSize :: Int
-              , overlap   :: Int
               } deriving (Show)
 
 splitXml :: O.Parser SplitXml
 splitXml =   SplitXml
-         <$> nullOption (  short 's' <> long "split-on" <> metavar "STRUCTURE" <> reader parseSplitOn
-                        <> help "The structure to split on. One of 'text', 'page', 'section', 'speaker'."
-                        )
-        <*> strOption   (  short 'i' <> long "input" <> metavar "FILENAME"
-                        <> help "The input file to split."
-                        )
-        <*> strOption   (  short 'o' <> long "output" <> metavar "DIRECTORY"
-                        <> help "The directory to put the output chunks into."
-                        )
-        <*> O.option    (  short 'c' <> long "chunk-size" <> metavar "TOKEN_COUNT" <> value 500
-                        <> help "The size of the chunks. Default is 500."
-                        )
-        <*> O.option    (  short 'l' <> long "overlap" <> metavar "TOKEN_OVERLAP" <> value 250
-                        <> help "The amount chunks should overlap. Default is 250."
-                        )
-
-parseSplitOn :: Monad m => String -> m SplitOn
-parseSplitOn "text"    = return SplitText
-parseSplitOn "t"       = return SplitText
-parseSplitOn "page"    = return SplitPage
-parseSplitOn "p"       = return SplitPage
-parseSplitOn "section" = return SplitSection
-parseSplitOn "s"       = return SplitSection
-parseSplitOn "speaker" = return SplitSpeaker
-parseSplitOn "sp"      = return SplitSpeaker
-parseSplitOn x         = fail $ "Unknown SplitOn value: " <> x
-
+         <$> strOption   (  short 'i' <> long "input" <> metavar "FILENAME"
+                         <> help "The input file to split."
+                         )
+         <*> strOption   (  short 'o' <> long "output" <> metavar "DIRECTORY"
+                         <> help "The directory to put the output chunks into."
+                         )
+ 

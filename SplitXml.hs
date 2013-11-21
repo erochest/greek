@@ -11,6 +11,7 @@ module Main where
 import           Control.Lens
 import           Control.Monad
 import           Data.Char
+import           Data.Maybe
 import           Data.Monoid
 import qualified Data.Text                 as T
 import           Data.XML.Types
@@ -146,9 +147,7 @@ getTexts d =   elementChildren (documentRoot d) >>= isNamed "text"
            >>= elementChildren >>= isNamed "text" >>= hasAttribute "n"
 
 getN :: Element -> Maybe T.Text
-getN el = if T.null n
-              then Nothing
-              else Just n
+getN el = listToMaybe [ n | T.null n ]
     where n = mconcat $ el ^.. _elementAttribute "n" . traverse . _ContentText
 
 makeOutputName :: FilePath -> T.Text -> FilePath

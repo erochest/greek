@@ -99,6 +99,8 @@ mapNodeContent _ n                = n
 
 -- Replacing the Entities
 
+-- This particular list of entities was generated with this unholy shell command:
+-- egrep '&[^;]*;' gk/Classics/Plato/opensource/plat.tet* | sed 's/.*\(&[^;]*;\).*/\1/g' | sort | uniq | pbcopy
 entity :: Content -> Content
 entity   (ContentEntity "dagger") = ContentText $ T.singleton '†'
 entity   (ContentEntity "dash")   = ContentText $ T.singleton '-'

@@ -122,10 +122,7 @@ contentChar = ContentText . T.singleton
 -- Processing the Output
 
 prepareOutputDir :: FilePath -> IO ()
-prepareOutputDir outDirname = do
-    exists <- isDirectory outDirname
-    when exists $ removeTree outDirname
-    createTree outDirname
+prepareOutputDir = createTree
 
 
 -- Working with Texts and Files
@@ -137,7 +134,7 @@ getTexts d =   elementChildren (documentRoot d) >>= isNamed "text"
            >>= elementChildren >>= isNamed "text" >>= hasAttribute "n"
 
 getN :: Element -> Maybe T.Text
-getN el = listToMaybe [ n | T.null n ]
+getN el = listToMaybe [ n | not (T.null n) ]
     where n = mconcat $ el ^.. _elementAttribute "n" . traverse . _ContentText
 
 makeOutputName :: FilePath -> T.Text -> FilePath
@@ -160,11 +157,14 @@ main = do
         makeOut = fmap (makeOutputName outDir) . getN
     prepareOutputDir outDir
 
+    logS ">>>" $ inputFile config
     texts <-   map ((makeOut &&& arr id) . mapElementContent entity) . getTexts
           <$> (U.readFile def . decodeString $ inputFile config)
 
     forM_ texts $ \(outFile, text) ->
-        maybe (return ()) (flip (U.writeFile writeOpts) (wrapDoc text)) outFile
+        maybe (return ())
+              (void . liftPair . (flip (U.writeFile writeOpts) (wrapDoc text) &&& logF "<<<"))
+              outFile
 
     where opts = info (helper <*> splitXml)
                       (  fullDesc
@@ -172,6 +172,9 @@ main = do
                       <> header "split-xml"
                       )
           writeOpts = def { rsPretty = True }
+          logS pref = putStrLn . (pref <>) . (' ' :)
+          logF pref = logS pref . encodeString
+          liftPair pair = (,) <$> fst pair <*> snd pair
 
 data SplitXml = SplitXml
               { inputFile :: String

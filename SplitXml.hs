@@ -8,6 +8,7 @@
 module Main where
 
 
+import           Control.Arrow
 import           Control.Lens
 import           Control.Monad
 import           Data.Char
@@ -150,16 +151,12 @@ main :: IO ()
 main = do
     config <- execParser opts
 
-    let outDir = decodeString $ outputDir config
+    let outDir  = decodeString $ outputDir config
+        makeOut = fmap (makeOutputName outDir) . getN
     prepareOutputDir outDir
 
-    -- TODO: Could clean this next line up with arrows
-    texts <-  map (\t -> (makeOutputName outDir <$> getN t, t))
-          .   map (mapElementContent entity)
-          .   getTexts
-          <$> (U.readFile def
-          .   decodeString
-          $   inputFile config)
+    texts <-   map ((makeOut &&& arr id) . mapElementContent entity) . getTexts
+          <$> (U.readFile def . decodeString $ inputFile config)
 
     forM_ texts $ \(outFile, text) ->
         maybe (return ()) (flip (U.writeFile writeOpts) (wrapDoc text)) outFile
